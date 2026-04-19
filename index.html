@@ -25,6 +25,19 @@
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        /* Instagram Animated Border */
+        .ig-animated-border {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            background-size: 200% 200%;
+            animation: ig-gradient 3s ease infinite;
+            padding: 4px; /* acts as the border width */
+            border-radius: 50%;
+        }
+        @keyframes ig-gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
         /* Custom scrollbar for textareas */
         textarea::-webkit-scrollbar {
             width: 8px;
@@ -68,10 +81,19 @@
 
     <!-- Cover Section -->
     <section id="cover-section" class="flex-grow flex flex-col items-center justify-center p-4 text-center min-h-screen animate-fade-in">
-        <div class="max-w-3xl space-y-8">
-            <a href="https://www.instagram.com/exc_ma_tdc?igsh=MTM4eWIxazlnODJ0MQ==" target="_blank" rel="noopener noreferrer" class="inline-block hover:scale-105 transition-transform duration-300">
-                <img src="TDC (4).png" alt="Workshop Logo" class="w-28 h-28 mx-auto rounded-full object-cover shadow-md border-4 border-blue-100 mb-4 hover:border-blue-300 transition-colors">
+        <div class="max-w-3xl space-y-8 flex flex-col items-center">
+            
+            <!-- Animated Instagram Logo Link -->
+            <a href="https://www.instagram.com/exc_ma_tdc?igsh=MTM4eWIxazlnODJ0MQ==" target="_blank" rel="noopener noreferrer" class="relative inline-block hover:scale-105 transition-transform duration-300 group mb-2" title="Follow us on Instagram">
+                <div class="ig-animated-border shadow-lg">
+                    <img src="TDC (4).png" alt="Workshop Logo" class="w-28 h-28 mx-auto rounded-full object-cover border-4 border-white">
+                </div>
+                <!-- Instagram Icon Badge -->
+                <div class="absolute -bottom-1 -right-1 bg-white p-2 rounded-full shadow-md text-pink-600 group-hover:text-pink-700 transition-colors ring-2 ring-white">
+                    <i data-lucide="instagram" class="w-6 h-6"></i>
+                </div>
             </a>
+            
             <h1 class="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent tracking-tight">
                 Medical Translation<br/>Post-Editing Workflow
             </h1>
@@ -192,15 +214,33 @@
                 <button onclick="showSection('cover-section')" class="px-6 py-3 text-slate-500 hover:text-slate-800 font-bold flex items-center gap-2 transition-colors">
                     <i data-lucide="arrow-left" class="w-5 h-5"></i> Back
                 </button>
-                <button onclick="startAbstracts()" class="group inline-flex items-center gap-3 px-8 py-4 bg-primary hover:bg-blue-800 text-white text-lg font-bold rounded-full transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
-                    Start Translation Task
-                    <i data-lucide="book-open" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                <button onclick="openMenu()" class="group inline-flex items-center gap-3 px-8 py-4 bg-primary hover:bg-blue-800 text-white text-lg font-bold rounded-full transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
+                    Proceed to Abstracts Menu
+                    <i data-lucide="grid" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
                 </button>
             </div>
         </div>
     </section>
 
-    <!-- Abstracts Section -->
+    <!-- Abstracts Menu Section -->
+    <section id="abstract-menu-section" class="hidden flex-grow flex-col max-w-6xl mx-auto px-4 py-12 w-full animate-fade-in">
+        <div class="text-center mb-10">
+            <h2 class="text-4xl font-extrabold text-slate-900 mb-4">Select an Abstract</h2>
+            <p class="text-lg text-slate-600">Choose an abstract to translate. Once claimed, it will be locked for other groups.</p>
+        </div>
+
+        <div id="abstractGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <!-- Dynamically populated via JS -->
+        </div>
+
+        <div class="mt-12 text-center">
+            <button onclick="resetLocks()" class="text-sm text-slate-400 hover:text-red-500 underline transition-colors">
+                <i data-lucide="unlock" class="w-4 h-4 inline mr-1"></i> Facilitator: Reset All Locks
+            </button>
+        </div>
+    </section>
+
+    <!-- Abstracts Section (Workspace) -->
     <section id="abstracts-section" class="hidden flex-grow flex-col max-w-7xl mx-auto px-4 py-8 w-full animate-fade-in">
         
         <!-- App Header mini -->
@@ -214,29 +254,32 @@
                     <p class="text-sm text-slate-500">Oussama El Arabi & Brahim Sghir</p>
                 </div>
             </div>
-            <button onclick="showSection('instructions-section')" class="text-sm px-5 py-2.5 text-primary hover:bg-blue-50 rounded-xl font-bold transition-colors flex items-center gap-2 border border-primary/20">
-                <i data-lucide="info" class="w-4 h-4"></i> View Instructions
-            </button>
-        </header>
-
-        <!-- Controls -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-6">
-            <button id="prevBtn" onclick="navigate(-1)" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                <i data-lucide="chevron-left" class="w-5 h-5"></i> Previous
-            </button>
-            
-            <div class="text-sm font-semibold text-slate-600 py-3 px-8 rounded-full bg-slate-50 border border-slate-200 shadow-inner">
-                Abstract <span id="pageIndicator" class="text-primary font-bold text-xl mx-2">1</span> of 10
+            <div class="flex items-center gap-3">
+                <button onclick="openMenu()" class="text-sm px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-bold transition-colors flex items-center gap-2 border border-slate-200">
+                    <i data-lucide="grid" class="w-4 h-4"></i> Abstracts Menu
+                </button>
+                <button onclick="showSection('instructions-section')" class="text-sm px-5 py-2.5 text-primary hover:bg-blue-50 rounded-xl font-bold transition-colors flex items-center gap-2 border border-primary/20">
+                    <i data-lucide="info" class="w-4 h-4"></i> View Instructions
+                </button>
             </div>
-            
-            <button id="nextBtn" onclick="navigate(1)" class="px-6 py-3 bg-primary hover:bg-blue-800 text-white rounded-xl font-bold transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                Next <i data-lucide="chevron-right" class="w-5 h-5"></i>
-            </button>
-        </div>
+        </header>
 
         <!-- Content Area -->
         <div id="abstractViewer" class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden flex-grow flex flex-col">
             
+            <!-- Student Names Input -->
+            <div class="p-6 bg-white border-b border-slate-200 shadow-sm relative z-10">
+                <h3 class="text-sm font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
+                    <i data-lucide="users" class="w-4 h-4 text-slate-400"></i> Team Members (Enter your names before starting)
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <input type="text" id="student1" oninput="saveInputs()" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-slate-700 bg-slate-50 focus:bg-white transition-colors placeholder:text-slate-400" placeholder="Student 1 Name">
+                    <input type="text" id="student2" oninput="saveInputs()" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-slate-700 bg-slate-50 focus:bg-white transition-colors placeholder:text-slate-400" placeholder="Student 2 Name">
+                    <input type="text" id="student3" oninput="saveInputs()" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-slate-700 bg-slate-50 focus:bg-white transition-colors placeholder:text-slate-400" placeholder="Student 3 Name">
+                    <input type="text" id="student4" oninput="saveInputs()" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-slate-700 bg-slate-50 focus:bg-white transition-colors placeholder:text-slate-400" placeholder="Student 4 Name">
+                </div>
+            </div>
+
             <!-- Phase 1: Reference Texts -->
             <div class="grid grid-cols-1 md:grid-cols-2 border-b border-slate-200">
                 <!-- Arabic Side -->
@@ -480,7 +523,8 @@
                 enBody: "Diet is a crucial factor in diabetes management, and this study aimed to evaluate the effect of adhering to the Mediterranean diet on glycated hemoglobin (HbA1c) levels in adults with type 2 diabetes. To achieve this, a randomized controlled clinical trial was conducted with 240 participants, divided into a group following the Mediterranean diet and another group following a traditional low-fat diet for 12 months. After one year of follow-up, the first group showed a statistically significant decrease in HbA1c levels of 0.8% compared to a decrease of 0.3% in the second group, along with a significant improvement in triglyceride levels. The study concludes that adherence to this diet is an effective non-pharmacological intervention for improving blood sugar control and managing cardiovascular risk.",
                 topic: "the effect of the Mediterranean diet on blood sugar control in Type 2 Diabetes",
                 keyTerm: "glycated hemoglobin",
-                studentText: "", aiText: ""
+                studentText: "", aiText: "",
+                s1: "", s2: "", s3: "", s4: ""
             },
             {
                 arTitle: "2. دور الأجهزة القابلة للارتداء في الكشف المبكر عن اضطرابات النظم القلبي",
@@ -489,7 +533,8 @@
                 enBody: "With rapid technological advancements, smartwatches have become a popular health monitoring tool. This prospective observational study investigated the accuracy of smartwatches with electrocardiogram (ECG) capabilities in detecting atrial fibrillation. The study included 1,500 participants with no pre-existing heart disease who were asked to wear the devices for six months. The alerts were compared to those obtained using standard clinical ECG. The devices recorded 85 potential alerts, and upon clinical verification, the devices achieved a sensitivity of 92% and a specificity of 96%, with a very low false-positive rate. This suggests that smartwatches offer a reliable, non-invasive method for the early detection of atrial fibrillation and stroke prevention.",
                 topic: "the use of wearable devices for the early detection of cardiac arrhythmias",
                 keyTerm: "atrial fibrillation",
-                studentText: "", aiText: ""
+                studentText: "", aiText: "",
+                s1: "", s2: "", s3: "", s4: ""
             },
             {
                 arTitle: "3. فعالية التطبيب عن بعد في إدارة ارتفاع ضغط الدم المزمن في المناطق الريفية",
@@ -498,7 +543,8 @@
                 enBody: "Rural populations face ongoing challenges in accessing healthcare. This study measured the impact of telemedicine platforms on blood pressure stabilization. Three hundred patients with essential hypertension were followed at several rural clinics. Half of the participants used home monitoring devices connected to a mobile application, while the other half received routine care for nine months. The results showed that 72% of patients in the telemedicine group achieved their target blood pressure readings, compared to 54% in the standard care group, with a 15% decrease in emergency room visits. These results confirm that virtual monitoring significantly enhances treatment adherence and represents a promising solution for bridging care gaps.",
                 topic: "the effectiveness of telemedicine in managing essential hypertension",
                 keyTerm: "essential hypertension",
-                studentText: "", aiText: ""
+                studentText: "", aiText: "",
+                s1: "", s2: "", s3: "", s4: ""
             },
             {
                 arTitle: "4. تأثير مكملات فيتامين \"د\" على كثافة المعادن في العظام لدى النساء بعد انقطاع الطمث",
@@ -507,7 +553,8 @@
                 enBody: "Osteoporosis is a significant health concern after menopause. This double-blind study aimed to evaluate the effectiveness of daily vitamin D supplementation combined with calcium in reducing bone density loss. The trial included 400 women. The experimental group received 2000 IU of vitamin D3 and 1000 mg of calcium daily, while the control group received a placebo for two years. DEXA scan measurements showed stable bone mineral density in the lumbar spine and femoral neck in the supplementation group, while the placebo group experienced a continuous decline. It can be concluded that these supplements play a vital protective role in maintaining bone mass.",
                 topic: "the effect of vitamin D and calcium supplementation on bone mineral density",
                 keyTerm: "osteoporosis",
-                studentText: "", aiText: ""
+                studentText: "", aiText: "",
+                s1: "", s2: "", s3: "", s4: ""
             },
             {
                 arTitle: "5. تقييم دقة خوارزميات الذكاء الاصطناعي في تشخيص اعتلال الشبكية السكري",
@@ -516,7 +563,8 @@
                 enBody: "Given that diabetic retinopathy is a leading cause of vision loss, this cross-sectional study aimed to compare the accuracy of a deep learning model for diagnosing the disease with the assessments of specialist ophthalmologists. A database of 10,000 retinal images was used to train and test the algorithm, and its results were then compared with independent assessments from three physicians. The AI model achieved an overall diagnostic accuracy of 95.4%, with a sensitivity of 96% for identifying vision-threatening conditions, a performance that closely matches that of human physicians while surpassing them in processing speed by 80%. This demonstrates the potential for integrating AI as a safe and effective initial triage tool in primary care clinics.",
                 topic: "evaluating AI algorithms in the diagnosis of diabetic retinopathy",
                 keyTerm: "diabetic retinopathy",
-                studentText: "", aiText: ""
+                studentText: "", aiText: "",
+                s1: "", s2: "", s3: "", s4: ""
             },
             {
                 arTitle: "6. انتشار آلام أسفل الظهر المهنية بين أطباء الأسنان وعوامل الخطر المرتبطة بها",
@@ -525,7 +573,8 @@
                 enBody: "Musculoskeletal disorders are common among dental professionals due to their static work postures. To determine the prevalence and contributing factors, a comprehensive cross-sectional survey of 600 practicing dentists was conducted, focusing on pain intensity, working hours, and ergonomic environment. Sixty-eight percent of participants reported experiencing lower back pain in the past year, and the pain was strongly associated with working more than six hours a day and not using ergonomic chairs. In contrast, dentists who practiced stretching exercises reported 40% lower pain levels. The study highlights the importance of educational interventions on ergonomics and preventative physiotherapy programs for practitioners.",
                 topic: "the prevalence of occupational low back pain and musculoskeletal disorders among dentists",
                 keyTerm: "musculoskeletal disorders",
-                studentText: "", aiText: ""
+                studentText: "", aiText: "",
+                s1: "", s2: "", s3: "", s4: ""
             },
             {
                 arTitle: "7. تأثير مدة النوم على الوظائف الإدراكية والأداء الأكاديمي لدى طلاب كليات الطب",
@@ -534,7 +583,8 @@
                 enBody: "Medical students are known to experience chronic sleep deprivation due to academic pressures. This prospective study followed 250 medical students for a full semester to measure the impact of sleep deprivation on memory and performance. Sleep duration was recorded daily, and biweekly cognitive assessment tests were administered. The data showed that students who slept less than six hours a day scored 22% lower on working memory and reaction speed tests compared to those who slept seven to eight hours, which gradually led to a decline in their final grades. The study concludes that adequate sleep is essential for optimal cognitive function, necessitating a learning environment that supports students' well-being.",
                 topic: "the impact of sleep deprivation on cognitive function in medical students",
                 keyTerm: "cognitive function",
-                studentText: "", aiText: ""
+                studentText: "", aiText: "",
+                s1: "", s2: "", s3: "", s4: ""
             },
             {
                 arTitle: "8. فعالية بروتوكولات العلاج الطبيعي المبكر بعد جراحة استبدال مفصل الركبة الكلي",
@@ -543,7 +593,8 @@
                 enBody: "Postoperative physical therapy is a crucial step in restoring joint function. This retrospective cohort study compared the initiation of intensive physical therapy within 24 hours of knee replacement surgery versus 48 hours later, reviewing the records of 450 patients. The group that received early intervention achieved a 15-degree better range of motion at discharge and experienced a median length of 1.5 days shorter than the delayed group, with no increase in reported pain or complications. This suggests the safety and effectiveness of early intervention in accelerating functional recovery and reducing the burden on hospitals.",
                 topic: "the effectiveness of early physical therapy after total knee replacement surgery",
                 keyTerm: "total knee replacement",
-                studentText: "", aiText: ""
+                studentText: "", aiText: "",
+                s1: "", s2: "", s3: "", s4: ""
             },
             {
                 arTitle: "9. التدخلات غير الدوائية في تحسين جودة الحياة لدى الأطفال المصابين بالربو",
@@ -552,7 +603,8 @@
                 enBody: "While medication is important for asthma, complementary interventions play a vital supportive role. This clinical trial explored the impact of breathing exercises and health education on 120 children with mild to moderate asthma. The intervention group received diaphragmatic breathing sessions and an educational program for eight weeks. After six months of follow-up, this group showed a 30% reduction in emergency room visits and a decrease in school absences, averaging two days per month, compared to the control group. The study recommends integrating awareness programs and specialized breathing exercises into standard care to reduce the burden of illness on children.",
                 topic: "non-drug interventions like breathing exercises for managing childhood asthma",
                 keyTerm: "diaphragmatic breathing",
-                studentText: "", aiText: ""
+                studentText: "", aiText: "",
+                s1: "", s2: "", s3: "", s4: ""
             },
             {
                 arTitle: "10. أثر الاستشارات الصيدلانية السريرية على الالتزام الدوائي لدى مرضى القصور القلبي",
@@ -561,17 +613,19 @@
                 enBody: "Poor adherence to prescribed medications is a major obstacle in the treatment of heart failure. This randomized clinical trial aimed to evaluate the impact of consultations and follow-up by a clinical pharmacist on 200 patients upon hospital discharge. Half of the participants received a detailed treatment plan and monthly telephone follow-up from a specialist pharmacist, while the other half received standard discharge instructions. Based on a standardized adherence scale, 85% of the intervention group demonstrated high adherence after six months, compared to 60% in the control group, with an 18% reduction in readmission rates. The research emphasizes the vital role of the clinical pharmacist in promoting treatment adherence and reducing relapses.",
                 topic: "the impact of clinical pharmacist consultations on medication adherence in heart failure",
                 keyTerm: "clinical pharmacist",
-                studentText: "", aiText: ""
+                studentText: "", aiText: "",
+                s1: "", s2: "", s3: "", s4: ""
             }
         ];
 
         let currentIndex = 0;
+        let claimedAbstracts = JSON.parse(localStorage.getItem('claimedAbstracts') || '[]');
 
         // Initialize Icons
         lucide.createIcons();
 
         function showSection(sectionId) {
-            ['cover-section', 'instructions-section', 'abstracts-section'].forEach(id => {
+            ['cover-section', 'instructions-section', 'abstract-menu-section', 'abstracts-section'].forEach(id => {
                 const el = document.getElementById(id);
                 if (id === sectionId) {
                     el.classList.remove('hidden');
@@ -584,9 +638,70 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function startAbstracts() {
+        function openMenu() {
+            renderMenu();
+            showSection('abstract-menu-section');
+        }
+
+        function renderMenu() {
+            const grid = document.getElementById('abstractGrid');
+            grid.innerHTML = '';
+            
+            data.forEach((item, index) => {
+                const isClaimed = claimedAbstracts.includes(index);
+                const btn = document.createElement('button');
+                
+                // Style based on claimed status
+                if (isClaimed) {
+                    btn.className = "p-6 rounded-2xl border-2 border-slate-200 bg-slate-100 flex flex-col items-center justify-center gap-3 opacity-60 cursor-not-allowed transition-all relative overflow-hidden";
+                    btn.innerHTML = `
+                        <div class="absolute inset-0 bg-slate-200/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                            <div class="bg-slate-800 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
+                                <i data-lucide="lock" class="w-3 h-3"></i> Claimed
+                            </div>
+                        </div>
+                        <i data-lucide="file-text" class="w-10 h-10 text-slate-400"></i>
+                        <span class="font-bold text-slate-500 text-lg">Abstract ${index + 1}</span>
+                    `;
+                } else {
+                    btn.className = "p-6 rounded-2xl border-2 border-primary/20 bg-white hover:bg-blue-50 hover:border-primary hover:-translate-y-1 shadow-sm hover:shadow-md flex flex-col items-center justify-center gap-3 transition-all cursor-pointer group";
+                    btn.onclick = () => selectAbstract(index);
+                    btn.innerHTML = `
+                        <i data-lucide="file-text" class="w-10 h-10 text-primary group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold text-slate-800 text-lg">Abstract ${index + 1}</span>
+                        <span class="text-xs text-secondary font-medium px-2 py-1 bg-blue-100 rounded-full mt-1">Available</span>
+                    `;
+                }
+                
+                grid.appendChild(btn);
+            });
+            lucide.createIcons();
+        }
+
+        function selectAbstract(index) {
+            // Check again in case it was modified
+            claimedAbstracts = JSON.parse(localStorage.getItem('claimedAbstracts') || '[]');
+            if (claimedAbstracts.includes(index)) {
+                alert("Sorry, this abstract has just been claimed by another group.");
+                renderMenu();
+                return;
+            }
+
+            // Claim it
+            claimedAbstracts.push(index);
+            localStorage.setItem('claimedAbstracts', JSON.stringify(claimedAbstracts));
+            
+            currentIndex = index;
             showSection('abstracts-section');
             renderPage();
+        }
+
+        function resetLocks() {
+            if(confirm("Are you sure you want to release all claimed abstracts? This is usually for the facilitator to reset the workshop.")) {
+                localStorage.removeItem('claimedAbstracts');
+                claimedAbstracts = [];
+                renderMenu();
+            }
         }
 
         function renderPage() {
@@ -601,6 +716,12 @@
             // Restore previously entered workspace texts
             document.getElementById('studentInput').value = currentData.studentText || "";
             document.getElementById('aiInput').value = currentData.aiText || "";
+            
+            // Restore Student Names
+            document.getElementById('student1').value = currentData.s1 || "";
+            document.getElementById('student2').value = currentData.s2 || "";
+            document.getElementById('student3').value = currentData.s3 || "";
+            document.getElementById('student4').value = currentData.s4 || "";
 
             // Reset Analysis View
             document.getElementById('analysisContainer').classList.add('hidden');
@@ -610,10 +731,6 @@
             // Reset Synthesis View
             document.getElementById('synthesisContent').classList.add('hidden');
             document.getElementById('synthesisPlaceholder').classList.remove('hidden');
-
-            document.getElementById('pageIndicator').textContent = currentIndex + 1;
-            document.getElementById('prevBtn').disabled = currentIndex === 0;
-            document.getElementById('nextBtn').disabled = currentIndex === data.length - 1;
 
             const viewer = document.getElementById('abstractViewer');
             viewer.style.opacity = 0;
@@ -626,19 +743,11 @@
         function saveInputs() {
             data[currentIndex].studentText = document.getElementById('studentInput').value;
             data[currentIndex].aiText = document.getElementById('aiInput').value;
-        }
-
-        function navigate(step) {
-            saveInputs(); 
-            const newIndex = currentIndex + step;
-            if (newIndex >= 0 && newIndex < data.length) {
-                currentIndex = newIndex;
-                renderPage();
-                
-                if (window.innerWidth < 1024) {
-                    document.getElementById('abstracts-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }
+            
+            data[currentIndex].s1 = document.getElementById('student1').value;
+            data[currentIndex].s2 = document.getElementById('student2').value;
+            data[currentIndex].s3 = document.getElementById('student3').value;
+            data[currentIndex].s4 = document.getElementById('student4').value;
         }
 
         // --- Phase 4 Analysis Logic (Laflamme Framework) ---
