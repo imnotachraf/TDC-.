@@ -30,7 +30,7 @@
             background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
             background-size: 200% 200%;
             animation: ig-gradient 3s ease infinite;
-            padding: 4px; /* acts as the border width */
+            padding: 4px; 
             border-radius: 50%;
         }
         @keyframes ig-gradient {
@@ -410,6 +410,7 @@
         </div>
     </section>
 
+    <!-- MAIN APP SCRIPT -->
     <script>
         // Medical Dictionary Definition 
         const medDictionary = {
@@ -454,7 +455,6 @@
         // Function to wrap medical terms in clickable spans
         function highlightMedicalTerms(text) {
             let newText = text;
-            // Sort keys by length descending to prevent partial replacements (e.g., replacing "diabetes" inside "type 2 diabetes")
             const keys = Object.keys(medDictionary).sort((a, b) => b.length - a.length);
             
             keys.forEach(key => {
@@ -478,7 +478,7 @@
         // Tooltip logic
         let currentTooltipKey = null;
 
-        function showTooltip(event, key) {
+        window.showTooltip = function(event, key) {
             event.stopPropagation();
             const tooltip = document.getElementById('medTooltip');
             const title = document.getElementById('tooltipTitle');
@@ -618,13 +618,16 @@
             }
         ];
 
+        // Global State
         let currentIndex = 0;
-        let claimedAbstracts = JSON.parse(localStorage.getItem('claimedAbstracts') || '[]');
+        window.claimedAbstracts = [];
 
-        // Initialize Icons
-        lucide.createIcons();
+        // Hooks for external sync (Firebase)
+        window.syncClaim = function(index) {};
+        window.syncReset = function() {};
 
-        function showSection(sectionId) {
+        // Expose functions globally for HTML inline handlers
+        window.showSection = function(sectionId) {
             ['cover-section', 'instructions-section', 'abstract-menu-section', 'abstracts-section'].forEach(id => {
                 const el = document.getElementById(id);
                 if (id === sectionId) {
@@ -638,20 +641,19 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function openMenu() {
-            renderMenu();
-            showSection('abstract-menu-section');
+        window.openMenu = function() {
+            window.renderMenu();
+            window.showSection('abstract-menu-section');
         }
 
-        function renderMenu() {
+        window.renderMenu = function() {
             const grid = document.getElementById('abstractGrid');
             grid.innerHTML = '';
             
             data.forEach((item, index) => {
-                const isClaimed = claimedAbstracts.includes(index);
+                const isClaimed = window.claimedAbstracts.includes(index);
                 const btn = document.createElement('button');
                 
-                // Style based on claimed status
                 if (isClaimed) {
                     btn.className = "p-6 rounded-2xl border-2 border-slate-200 bg-slate-100 flex flex-col items-center justify-center gap-3 opacity-60 cursor-not-allowed transition-all relative overflow-hidden";
                     btn.innerHTML = `
@@ -665,7 +667,7 @@
                     `;
                 } else {
                     btn.className = "p-6 rounded-2xl border-2 border-primary/20 bg-white hover:bg-blue-50 hover:border-primary hover:-translate-y-1 shadow-sm hover:shadow-md flex flex-col items-center justify-center gap-3 transition-all cursor-pointer group";
-                    btn.onclick = () => selectAbstract(index);
+                    btn.onclick = () => window.selectAbstract(index);
                     btn.innerHTML = `
                         <i data-lucide="file-text" class="w-10 h-10 text-primary group-hover:scale-110 transition-transform"></i>
                         <span class="font-bold text-slate-800 text-lg">Abstract ${index + 1}</span>
@@ -678,59 +680,56 @@
             lucide.createIcons();
         }
 
-        function selectAbstract(index) {
-            // Check again in case it was modified
-            claimedAbstracts = JSON.parse(localStorage.getItem('claimedAbstracts') || '[]');
-            if (claimedAbstracts.includes(index)) {
+        window.selectAbstract = function(index) {
+            if (window.claimedAbstracts.includes(index)) {
                 alert("Sorry, this abstract has just been claimed by another group.");
-                renderMenu();
+                window.renderMenu();
                 return;
             }
 
-            // Claim it
-            claimedAbstracts.push(index);
-            localStorage.setItem('claimedAbstracts', JSON.stringify(claimedAbstracts));
+            // Lock it locally and attempt to sync to cloud
+            window.claimedAbstracts.push(index);
+            window.syncClaim(index);
             
             currentIndex = index;
-            showSection('abstracts-section');
-            renderPage();
+            window.showSection('abstracts-section');
+            window.renderPage();
         }
 
-        function resetLocks() {
+        window.resetLocks = function() {
             if(confirm("Are you sure you want to release all claimed abstracts? This is usually for the facilitator to reset the workshop.")) {
-                localStorage.removeItem('claimedAbstracts');
-                claimedAbstracts = [];
-                renderMenu();
+                window.claimedAbstracts = [];
+                window.syncReset();
+                window.renderMenu();
             }
         }
 
-        function renderPage() {
+        window.renderPage = function() {
             const currentData = data[currentIndex];
             
-            // Populate Reference Texts with Highlighted Terms
             document.getElementById('arTitle').innerHTML = highlightMedicalTerms(currentData.arTitle);
             document.getElementById('arBody').innerHTML = highlightMedicalTerms(currentData.arBody);
             document.getElementById('enTitle').innerHTML = highlightMedicalTerms(currentData.enTitle);
             document.getElementById('enBody').innerHTML = highlightMedicalTerms(currentData.enBody);
 
-            // Restore previously entered workspace texts
             document.getElementById('studentInput').value = currentData.studentText || "";
             document.getElementById('aiInput').value = currentData.aiText || "";
             
-            // Restore Student Names
             document.getElementById('student1').value = currentData.s1 || "";
             document.getElementById('student2').value = currentData.s2 || "";
             document.getElementById('student3').value = currentData.s3 || "";
             document.getElementById('student4').value = currentData.s4 || "";
 
-            // Reset Analysis View
             document.getElementById('analysisContainer').classList.add('hidden');
             document.getElementById('summarySection').classList.add('hidden');
             document.getElementById('analysisPlaceholder').classList.remove('hidden');
             
-            // Reset Synthesis View
             document.getElementById('synthesisContent').classList.add('hidden');
             document.getElementById('synthesisPlaceholder').classList.remove('hidden');
+
+            document.getElementById('pageIndicator').textContent = currentIndex + 1;
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            document.getElementById('nextBtn').disabled = currentIndex === data.length - 1;
 
             const viewer = document.getElementById('abstractViewer');
             viewer.style.opacity = 0;
@@ -740,7 +739,7 @@
             }, 50);
         }
 
-        function saveInputs() {
+        window.saveInputs = function() {
             data[currentIndex].studentText = document.getElementById('studentInput').value;
             data[currentIndex].aiText = document.getElementById('aiInput').value;
             
@@ -750,8 +749,21 @@
             data[currentIndex].s4 = document.getElementById('student4').value;
         }
 
+        window.navigate = function(step) {
+            window.saveInputs(); 
+            const newIndex = currentIndex + step;
+            if (newIndex >= 0 && newIndex < data.length) {
+                currentIndex = newIndex;
+                window.renderPage();
+                
+                if (window.innerWidth < 1024) {
+                    document.getElementById('abstracts-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+
         // --- Phase 4 Analysis Logic (Laflamme Framework) ---
-        function runAnalysis() {
+        window.runAnalysis = function() {
             const studentText = document.getElementById('studentInput').value;
             const aiText = document.getElementById('aiInput').value;
 
@@ -938,9 +950,84 @@
 
         // Initialize App on Cover Screen
         document.addEventListener('DOMContentLoaded', () => {
-            showSection('cover-section');
+            lucide.createIcons();
+            window.showSection('cover-section');
         });
+    </script>
 
+    <!-- REAL-TIME CLOUD DATABASE (FIREBASE SYNC) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        try {
+            // 👇 IMPORTANT: REPLACE THIS BLOCK WITH YOUR OWN FIREBASE CONFIG FOR EXTERNAL HOSTING 👇
+            // You can get this by creating a free project at https://console.firebase.google.com/
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+                apiKey: "YOUR_API_KEY",
+                authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+                projectId: "YOUR_PROJECT_ID",
+                storageBucket: "YOUR_PROJECT_ID.appspot.com",
+                messagingSenderId: "YOUR_SENDER_ID",
+                appId: "YOUR_APP_ID"
+            };
+            // 👆 ============================================================================== 👆
+
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'medical-translation-workshop';
+            
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'locks', 'abstracts');
+
+            const initAuth = async () => {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            };
+
+            initAuth().catch(console.error);
+
+            onAuthStateChanged(auth, user => {
+                if (user) {
+                    onSnapshot(docRef, (docSnap) => {
+                        if (docSnap.exists()) {
+                            window.claimedAbstracts = docSnap.data().claimed || [];
+                        } else {
+                            window.claimedAbstracts = [];
+                        }
+                        
+                        // Force menu to re-render to show updated locks to the student
+                        const menuSection = document.getElementById('abstract-menu-section');
+                        if (menuSection && !menuSection.classList.contains('hidden')) {
+                            window.renderMenu();
+                        }
+                    }, (error) => {
+                        console.error("Firestore Listen Error:", error);
+                    });
+                }
+            });
+
+            // Override global hooks to sync to cloud
+            window.syncClaim = async function(index) {
+                if(!auth.currentUser) return;
+                const newClaimed = [...window.claimedAbstracts];
+                if (!newClaimed.includes(index)) newClaimed.push(index); // safety check
+                
+                await setDoc(docRef, { claimed: newClaimed }, { merge: true });
+            };
+
+            window.syncReset = async function() {
+                if(!auth.currentUser) return;
+                await setDoc(docRef, { claimed: [] }, { merge: true });
+            };
+
+        } catch (e) {
+            console.warn("⚠️ Firebase is not properly configured. The abstract locks will only work locally on this computer. To make it work globally, please add your Firebase config in the code.", e);
+        }
     </script>
 </body>
 </html>
